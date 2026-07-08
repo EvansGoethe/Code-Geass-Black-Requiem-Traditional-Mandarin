@@ -14,81 +14,89 @@ jobs:
           PARATRANZ_TOKEN: ${{ secrets.PARATRANZ_TOKEN }}
           PROJECT_ID: ${{ secrets.PARATRANZ_PROJECT_ID }}
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        
         run: |
           python3 -c "
           import os, datetime, urllib.request, json, urllib.error
-          
+
           token = os.getenv('PARATRANZ_TOKEN', '').strip()
           project_id = os.getenv('PROJECT_ID', '').strip()
           webhook = os.getenv('DISCORD_WEBHOOK', '').strip()
-          
+
           if not token or not project_id or not webhook:
-              print('❌ 錯誤：無法讀取 Secrets。')
+              print('❌ 錯誤：無法讀取 Secrets，請檢查 GitHub 儲存庫設定。')
               exit(1)
-          
+
           if not token.startswith('Bearer '):
               token = f'Bearer {token}'
-              
+
+          # 抓取 Paratranz 資料
           start_time = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M:%SZ')
-          url = f'https://paratranz.cn/api/projects/{project_id}/history?start={start_time}'
-          print(f'正在連線至 Paratranz API: {url}')
-          
-          req = urllib.request.Request(url)
+          api_url = f'https://paratranz.cn/api/projects/{project_id}/history?start={start_time}'
+          print(f'正在連線至 Paratranz API: {api_url}')
+
+          req = urllib.request.Request(api_url)
           req.add_header('Authorization', token)
           req.add_header('Content-Type', 'application/json')
-          
+
           try:
               with urllib.request.urlopen(req) as response:
-                  res_body = response.read().decode()
-                  data = json.loads(res_body)
-                  
-                  # 確保讀出來的是標準資料
-                  if isinstance(data, dict):
-                      results = data.get('results', [])
-                  elif isinstance(data, list):
-                      results = data
-                  else:
-                      results = []
-                      
-                  count = len(results)
-                  
-                  if count > 0:
-                      print(f'發現 {count} 筆新動態，正在發送至 Discord...')
-                      
-                      # 強制安全取件
-                      latest = results[0] if isinstance(results, list) and len(results) > 0 else {}
-                      if not isinstance(latest, dict):
-                          latest = {}
-                      
-                      user_name = latest.get('user', {}).get('username', '未知用戶') if isinstance(latest.get('user'), dict) else '未知用戶'
-                      action = latest.get('action', '未知動作')
-                      
-                      file_obj = latest.get('file')
-                      file_name = file_obj.get('name', '系統專案') if isinstance(file_obj, dict) else '系統專案'
-                      
-                      payload = {
-                          'embeds': [{
-                              'title': '📝 Paratranz 專案新動態',
-                              'description': f'**操作用戶：** {user_name}\n**動作：** {action}\n**相關檔案：** {file_name}',
-                              'color': 5814783,
-                              'url': f'https://paratranz.cn{project_id}',
-                              'footer': {'text': '由 GitHub Actions 自動轉發'}
-                          }]
-                      }
-                      
-                      disc_req = urllib.request.Request(webhook, data=json.dumps(payload).encode('utf-8'), method='POST')
-                      disc_req.add_header('Content-Type', 'application/json')
-                      disc_req.add_header('User-Agent', 'Mozilla/5.0')
-                      with urllib.request.urlopen(disc_req) as disc_res:
-                          print('Discord 訊息發送成功！')
-                  else:
-                      print('過去 30 分鐘內無任何新動態。')
+                  data = json.loads(response.read().decode())
           except urllib.error.HTTPError as e:
-              print(f'❌ 網路請求錯誤 (HTTP 錯誤代碼 {e.code})')
+              print(f'❌ Paratranz API 請求失敗 (HTTP {e.code})')
               try:
-                  print(f'錯誤詳細回應: {e.read().decode()}')
+                  print(e.read().decode())
               except:
                   pass
+              exit(1)
+
+          results = data.get('results', [])
+          if not results:
+              print('過去 30 分鐘內無任何新動態。')
+              exit(0)
+
+          print(f'發現 {len(results)} 筆新動態，正在準備發送最新的一筆至 Discord...')
+          latest = results[0]
+
+          # 安全提取各項數值
+          user_data = latest.get('user') or {}
+          user_name = user_data.get('username', '未知用戶')
+          action = latest.get('action', '未知動作')
+          
+          file_obj = latest.get('file')
+          if isinstance(file_obj, dict):
+              file_name = file_obj.get('name', '系統專案')
+          else:
+              file_name = '系統專案'
+
+          # 防呆：確保提取出的 project_id 是純數字，避免 URL 損毀
+          clean_project_id = str(project_id).split('/')[-1]
+
+          payload = {
+              'embeds': [{
+                  'title': '📝 Paratranz 專案新動態',
+                  'description': f'**操作用戶：** {user_name}\n**動作：** {action}\n**相關檔案：** {file_name}',
+                  'color': 5814783,
+                  'url': f'https://paratranz.cn/projects/{clean_project_id}',
+                  'footer': {'text': '由 GitHub Actions 自動轉發'}
+              }]
+          }
+
+          disc_req = urllib.request.Request(
+              webhook, 
+              data=json.dumps(payload).encode('utf-8'), 
+              method='POST'
+          )
+          disc_req.add_header('Content-Type', 'application/json')
+          disc_req.add_header('User-Agent', 'Mozilla/5.0')
+
+          try:
+              with urllib.request.urlopen(disc_req) as disc_res:
+                  print('✅ Discord 訊息發送成功！')
+          except urllib.error.HTTPError as e:
+              print(f'❌ Discord Webhook 請求失敗 (HTTP 錯誤代碼 {e.code})')
+              print(f'Discord 錯誤詳細回應: {e.read().decode()}')
+              print(f'⚠️ 我們實際送出的 Payload 是: {json.dumps(payload, ensure_ascii=False)}')
               exit(1)
           except Exception as e:
               print(f'❌ 執行出錯: {e}')
