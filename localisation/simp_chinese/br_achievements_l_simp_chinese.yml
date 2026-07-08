@@ -1,10 +1,10 @@
 ﻿﻿l_simp_chinese:
  RULE_ALLOW_BR_CUSTOM_ACHIEVEMENTS:0 "Custom Achievements"
  RULE_ALLOW_BR_CUSTOM_ACHIEVEMENTS_ENABLED:0 "Enabled"
- RULE_ALLOW_BR_CUSTOM_ACHIEVEMENTS_ENABLED_DESC:0 "§YBlack Requiem§! disables the steam achievements, however with custom achievements §Genabled§!, all human players §Gwill§! be able to earn custom made Black Requiem Achievements."
+ RULE_ALLOW_BR_CUSTOM_ACHIEVEMENTS_ENABLED_DESC:0 "§YBlack Requiem§! 會停用 Steam 成就，但啟用自訂成就 §Genabled§! 後，所有人類玩家 §Gwill§! 都能獲得自訂的 Black Requiem 成就。"
  RULE_ALLOW_BR_CUSTOM_ACHIEVEMENTS_DISABLED:0 "Disabled"
- RULE_ALLOW_BR_CUSTOM_ACHIEVEMENTS_DISABLED_DESC:0 "§YBlack Requiem§! disables the steam achievements and with custom achievements §Rdisabled§!, the custom made Black Requiem Achievements can also §Rnot§! be earned."
- ACHIEVEMENTS_MOD_OK:0 "§HCan get Achievements from mods!§!"
+ RULE_ALLOW_BR_CUSTOM_ACHIEVEMENTS_DISABLED_DESC:0 "§YBlack Requiem§! 會停用 Steam 成就，並且使用自訂成就 §Rdisabled§!，自訂的 Black Requiem 成就也無法獲得 §Rnot§!。"
+ ACHIEVEMENTS_MOD_OK:0 "§H可以透過模組獲得成就！ §!"
  MODS_ALLOW_ACHIEVEMENTS:0 "At least one mod has achievements"
  BR_achievements:0 "Black Requiem: Achievements"
  BR_endings:0 "Black Requiem: Endings"
