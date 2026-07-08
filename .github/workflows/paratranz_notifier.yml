@@ -11,11 +11,9 @@ jobs:
     steps:
       - name: Fetch Paratranz History and Notify Discord
         env:
-          # 精準對齊您圖片中的 Secrets 命名
           PARATRANZ_TOKEN: ${{ secrets.PARATRANZ_TOKEN }}
           PROJECT_ID: ${{ secrets.PARATRANZ_PROJECT_ID }}
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        
         run: |
           python3 -c "
           import os, datetime, urllib.request, json, urllib.error
@@ -43,19 +41,26 @@ jobs:
               with urllib.request.urlopen(req) as response:
                   res_body = response.read().decode()
                   data = json.loads(res_body)
-                  results = data.get('results', [])
+                  
+                  # 確保讀出來的是標準資料
+                  if isinstance(data, dict):
+                      results = data.get('results', [])
+                  elif isinstance(data, list):
+                      results = data
+                  else:
+                      results = []
+                      
                   count = len(results)
                   
                   if count > 0:
                       print(f'發現 {count} 筆新動態，正在發送至 Discord...')
                       
-                      # 修正：用迴圈直接安全地取出第一筆字典，避開 [0] 被誤判為字串切片的問題
-                      latest = {}
-                      for item in results:
-                          latest = item
-                          break
+                      # 強制安全取件
+                      latest = results[0] if isinstance(results, list) and len(results) > 0 else {}
+                      if not isinstance(latest, dict):
+                          latest = {}
                       
-                      user_name = latest.get('user', {}).get('username', '未知用戶')
+                      user_name = latest.get('user', {}).get('username', '未知用戶') if isinstance(latest.get('user'), dict) else '未知用戶'
                       action = latest.get('action', '未知動作')
                       
                       file_obj = latest.get('file')
