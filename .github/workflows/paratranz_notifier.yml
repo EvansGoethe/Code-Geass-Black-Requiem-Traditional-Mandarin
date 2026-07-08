@@ -2,7 +2,7 @@ name: 🔔 Paratranz Discord Notifier
 
 on:
   schedule:
-    - cron: '*/30 * * * *' # 每 30 分鐘自動檢查一次變動（可自行修改）
+    - cron: '*/30 * * * *' # 每 30 分鐘自動檢查一次變動
   workflow_dispatch: # 允許您在 GitHub 網頁上手動點擊測試
 
 jobs:
@@ -11,8 +11,9 @@ jobs:
     steps:
       - name: Fetch Paratranz History and Notify Discord
         env:
-          PT_TOKEN: ${{ secrets.PARATRANZ_TOKEN }}
-          PT_PROJECT_ID: ${{ secrets.PARATRANZ_PROJECT_ID }}
+          # 關鍵修正：確保這裡的名稱與下方 Python 讀取的 os.getenv 完全一致
+          PARATRANZ_TOKEN: ${{ secrets.PARATRANZ_TOKEN }}
+          PROJECT_ID: ${{ secrets.PARATRANZ_PROJECT_ID }}
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           python3 -c "
@@ -23,8 +24,13 @@ jobs:
           project_id = os.getenv('PROJECT_ID')
           webhook = os.getenv('DISCORD_WEBHOOK')
           
-          # 2. 精確計算 30 分鐘前的 UTC 時間
-          start_time = (datetime.datetime.utcnow() - datetime.timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M:%SZ')
+          # 防呆檢查：如果 Secrets 沒填對，直接輸出提示不崩潰
+          if not token or not project_id or not webhook:
+              print('❌ 錯誤：GitHub Secrets 填寫不完整，請檢查 PARATRANZ_TOKEN, PROJECT_ID 或 DISCORD_WEBHOOK_URL 是否有正確設定。')
+              exit(1)
+          
+          # 2. 計算 30 分鐘前的 UTC 時間 (修正 DeprecationWarning 警告)
+          start_time = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M:%SZ')
           
           # 3. 呼叫 Paratranz API
           url = f'https://paratranz.cn{project_id}/history?start={start_time}'
@@ -44,7 +50,7 @@ jobs:
                       latest = results[0]
                       user_name = latest.get('user', {}).get('username', '未知用戶')
                       action = latest.get('action', '未知動作')
-                      file_name = latest.get('file', {}).get('name', '系統專案')
+                      file_name = latest.get('file', {}).get('name', '系統專案') if latest.get('file') else '系統專案'
                       
                       # 4. 組裝 Discord 訊息
                       payload = {
