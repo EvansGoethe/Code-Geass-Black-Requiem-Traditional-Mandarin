@@ -24,12 +24,14 @@ jobs:
           webhook = os.getenv('DISCORD_WEBHOOK', '').strip()
           
           if not token or not project_id or not webhook:
-              print('❌ 錯誤：無法讀取 Secrets，請確認變數名稱是否正確。')
+              print('❌ 錯誤：無法讀取 Secrets。')
               exit(1)
+          
+          if not token.startswith('Bearer '):
+              token = f'Bearer {token}'
               
           start_time = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M:%SZ')
-          
-          url = f'https://paratranz.cn/api/projects/{project_id}/history?start={start_time}'
+          url = f'https://paratranz.cn{project_id}/history?start={start_time}'
           print(f'正在連線至 Paratranz API: {url}')
           
           req = urllib.request.Request(url)
@@ -38,13 +40,17 @@ jobs:
           
           try:
               with urllib.request.urlopen(req) as response:
-                  data = json.loads(response.read().decode())
+                  res_body = response.read().decode()
+                  data = json.loads(res_body)
                   results = data.get('results', [])
                   count = len(results)
                   
                   if count > 0:
                       print(f'發現 {count} 筆新動態，正在發送至 Discord...')
-                      latest = results if isinstance(results, list) and len(results) > 0 else {}
+                      
+                      # 終極修正：正確取出 List 陣列中的第 0 筆（最新動態）字典物件
+                      latest = results[0] if isinstance(results, list) and len(results) > 0 else {}
+                      
                       user_name = latest.get('user', {}).get('username', '未知用戶')
                       action = latest.get('action', '未知動作')
                       file_name = latest.get('file', {}).get('name', '系統專案') if latest.get('file') else '系統專案'
