@@ -24,7 +24,8 @@ jobs:
         run: |
           echo "開始從 ParaTranz 獲取翻譯..."
           
-          - name: 處理 P社專用格式 (轉 UTF-8 BOM 與語言替換)
+      - name: 處理 P社專用格式 (轉 UTF-8 BOM 與語言替換)
+        run: |
           python -c "
           import os, glob, codecs
           target_dir = 'localisation/english'
