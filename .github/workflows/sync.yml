@@ -34,12 +34,6 @@ jobs:
               filename = os.path.basename(filepath)
               new_filename = filename.replace('l_english', 'l_simp_chinese')
               new_filepath = os.path.join(target_dir, new_filename)
-
-              with codecs.open(filepath, 'r', encoding='utf-8') as f:
-                  content = f.read()
-
-              with codecs.open(new_filepath, 'w', encoding='utf-8-sig') as f:
-                  f.write(content)
           "
           
           # 🛑 關鍵修復：加入 -L 參數，讓 curl 自動跟隨 302 轉址去下載真正的檔案
