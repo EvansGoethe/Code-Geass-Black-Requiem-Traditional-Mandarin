@@ -23,7 +23,7 @@ This repository contains the Traditional Chinese translation files for the Heart
 1. 請於 Steam 工作坊訂閱即將發布的 Steam 工作坊漢化版本。
 
 ### 🤝 參與翻譯
-如果你對《Code Geass》充滿熱情，歡迎加入我們的翻譯行列！請前往本專案的 ParaTranz 頁面申請加入（請在此替換為你的 ParaTranz 專案連結）。
+如果你對《Code Geass》充滿熱情，歡迎加入我們的翻譯行列！請前往本專案的 ParaTranz 頁面[申請加入](https://paratranz.cn/projects/19644)。
 
 ---
 
@@ -36,8 +36,8 @@ This project provides a complete Traditional Chinese localization for the HOI4 m
 This repository features a fully automated translation pipeline:
 * **Translation Platform**: All translations are crowdsourced and managed via [ParaTranz].
 * **GitHub Actions Sync**: A custom workflow automatically fetches the latest translation artifacts from ParaTranz via API.
-* **Format Conversion**: The workflow automatically parses the downloaded `.yml` files, converts the encoding to `UTF-8 WITH BOM` (required by the Clausewitz Engine), and remaps the localization keys to `l_simp_chinese`.
-* **Auto-Commit**: The processed files are automatically pushed to the `localisation/simp_chinese` directory in this repository.
+* **Format Conversion**: The workflow automatically parses the downloaded `.yml` files, converts the encoding to `UTF-8 WITH BOM` (required by the Clausewitz Engine).
+* **Auto-Commit**: The processed files are automatically pushed to the `localisation/english` directory in this repository.
 
 ### 🚀 How to Use
 1. Subscribe to the localized mod on the Steam Workshop (Link TBA).
