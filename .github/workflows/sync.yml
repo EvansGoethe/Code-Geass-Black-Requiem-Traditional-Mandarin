@@ -44,6 +44,19 @@ jobs:
           import os, glob, codecs
           target_dir = 'localisation/english'
           os.makedirs(target_dir, exist_ok=True)
+          
+          for filepath in glob.glob('./pt_download/**/*.yml', recursive=True):
+              filename = os.path.basename(filepath)
+              new_filename = filename.replace('l_english', 'l_english')
+              new_filepath = os.path.join(target_dir, new_filename)
+
+              with codecs.open(filepath, 'r', encoding='utf-8') as f:
+                  content = f.read()
+
+              content = content.replace('l_english:', 'l_english:')
+
+              with codecs.open(new_filepath, 'w', encoding='utf-8-sig') as f:
+                  f.write(content)
           "
 
       - name: 自動提交與推送到 GitHub
