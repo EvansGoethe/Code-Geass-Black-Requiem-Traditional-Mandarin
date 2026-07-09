@@ -40,9 +40,7 @@ This repository features a fully automated translation pipeline:
 * **Auto-Commit**: The processed files are automatically pushed to the `localisation/simp_chinese` directory in this repository.
 
 ### 🚀 How to Use
-1. Subscribe to the original mod on the Steam Workshop: [Code Geass - Black Requiem](https://steamcommunity.com/workshop/filedetails/?id=2785523030).
-2. Download the contents of this repository and load it as a local mod, or subscribe to the localized sub-mod on the Steam Workshop (Link TBA).
-3. Ensure this translation mod is placed **below** the original mod in your HOI4 playset order.
+1. Subscribe to the localized mod on the Steam Workshop (Link TBA).
 
 ### ⚖️ Credits & Disclaimer
 * All original assets, mechanics, and lore belong to the **Code Geass - Black Requiem Development Team**. 
